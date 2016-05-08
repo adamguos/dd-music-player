@@ -1,6 +1,6 @@
 from mutagen.easyid3 import EasyID3
+from mutagen.easymp4 import EasyMP4
 from mutagen.flac import FLAC
-from mutagen.m4a import M4A
 import os
 
 class FileHandler:
@@ -18,29 +18,32 @@ class FileHandler:
 	def checkupdate(cls, filename, update):
 		return os.path.getmtime(cls.mediadir + filename) == update
 
-	''' Get all metadata in the form of a tuple from a specified file '''
+	''' Get all metadata in the form of a dict from a specified file '''
 	@classmethod
 	def getmetadata(cls, filename):
-		codec = getcodec(filename)
+		codec = cls.getcodec(filename)
 		tagsdict = None
 
 		# Each codec requires a different module and different processing; at the end of this construct, no matter what the codec is, a dictionary with tag names as keys and tag values as values is created
 		if codec == 'mp3':
-			tagsdict = parse_mp3(filename)
+			tagsdict = cls.parse_mp3(filename)
 		elif codec == 'flac':
-			tagsdict = parse_flac(filename)
+			tagsdict = cls.parse_flac(filename)
 		elif codec == 'm4a':
-			tagsdict = parse_m4a(filename)
+			tagsdict = cls.parse_m4a(filename)
 
-
-		track = MP3(filename)
-		trackinfo = track.info
-		return ()
+		# Guaranteed attributes of tagsdict: date, title, tracknumber (no total), genre, album, albumartist, artist, discnumber (no total)
+		return tagsdict
 
 	''' Determine what file format (and therefore codec, in this simplified case) the file is in '''
 	@classmethod
 	def getcodec(cls, filename):
 		ext = filename.split('.')[-1]
+		if not ext == 'mp3' and not ext == 'm4a' and not ext == 'flac':
+			raise NotImplementedError(filename)
+		if not cls.checkexists(filename):
+			raise FileNotFoundError(filename)
+
 		return ext.lower()
 
 	''' Open an MP3 file and create a dict storing its metadata in a standard form used across the module '''
@@ -78,6 +81,18 @@ class FileHandler:
 		return d
 
 	''' Open an M4A file and create a dict storing its metadata in a standard form used across the module '''
+	@classmethod
+	def parse_m4a(cls, filename):
+		# EasyMP4() creates an EasyMP4 object that can be conveniently converted into a dictionary
+		audio = EasyMP4(cls.mediadir + filename)
+		d = dict(audio)
 
-	# @classmethod
-	# def parse_m4a(cls, filename):
+		# All values in the dict are further stored inside lists; this removes that unnecessary layer
+		for key in d:
+			d[key] = d[key][0]
+
+		# Removes total from disc and track number values
+		d['tracknumber'] = d['tracknumber'].split('/')[0]
+		d['discnumber'] = d['discnumber'].split('/')[0]
+
+		return d
