@@ -13,10 +13,10 @@ class FileHandler:
 	def checkexists(cls, filename):
 		return os.path.isfile(cls.mediadir + filename)
 
-	''' Check if the specified filename was updated at the same time as the given update time; i.e. whether or not the file has been updated since the record was updated '''
+	''' Get the time at which the specified file was last updated '''
 	@classmethod
-	def checkupdate(cls, filename, update):
-		return os.path.getmtime(cls.mediadir + filename) == update
+	def getupdate(cls, filename):
+		return os.path.getmtime(cls.mediadir + filename)
 
 	''' Get all metadata in the form of a dict from a specified file '''
 	@classmethod
@@ -26,23 +26,23 @@ class FileHandler:
 
 		# Each codec requires a different module and different processing; at the end of this construct, no matter what the codec is, a dictionary with tag names as keys and tag values as values is created
 		if codec == 'mp3':
-			tagsdict = cls.parse_mp3(filename)
+			tagsdict = dict(cls.parse_mp3(filename), **{'filename': filename, 'update': cls.getupdate(filename)})
 		elif codec == 'flac':
-			tagsdict = cls.parse_flac(filename)
+			tagsdict = dict(cls.parse_flac(filename), **{'filename': filename, 'update': cls.getupdate(filename)})
 		elif codec == 'm4a':
-			tagsdict = cls.parse_m4a(filename)
+			tagsdict = dict(cls.parse_m4a(filename), **{'filename': filename, 'update': cls.getupdate(filename)})
 
-		# Guaranteed attributes of tagsdict: date, title, tracknumber (no total), genre, album, albumartist, artist, discnumber (no total)
+		# Guaranteed attributes of tagsdict: date, title, tracknumber (no total), genre, album, albumartist, artist, discnumber (no total), filename (excluding media directory, including extension)
 		return tagsdict
 
 	''' Determine what file format (and therefore codec, in this simplified case) the file is in '''
 	@classmethod
 	def getcodec(cls, filename):
 		ext = filename.split('.')[-1]
-		if not ext == 'mp3' and not ext == 'm4a' and not ext == 'flac':
-			raise NotImplementedError(filename)
 		if not cls.checkexists(filename):
 			raise FileNotFoundError(filename)
+		if not ext == 'mp3' and not ext == 'm4a' and not ext == 'flac':
+			raise NotImplementedError(filename)
 
 		return ext.lower()
 
