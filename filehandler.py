@@ -96,3 +96,30 @@ class FileHandler:
 		d['discnumber'] = d['discnumber'].split('/')[0]
 
 		return d
+
+	''' Recursively go through the directory structure within mediadir, and return a list of all music (.mp3, .m4a, .flac) files found '''
+	@classmethod
+	def getallfiles(cls):
+		matches = []
+
+		# Recursively goes through every file inside the given directory and its subdirectories, which may incur a heavy performance penalty and will have to be used moderately or changed
+		# Each loop enters a new subdirectory
+		for root, dirnames, filenames in os.walk(cls.mediadir):
+			# root is the path leading up to the current directory, including mediadir; since mediadir is automatically added by all other methods in the class, this needs to be removed
+			root = root.replace(cls.mediadir, '', 1)
+			if len(root) > 0: root += '/'
+
+			# For every file in the current directory, attempt to check the codec then append the filename to the matches list; getcodec will raise errors if necessary
+			for filename in filenames:
+				try:
+					cls.getcodec(root + filename)
+					matches.append(os.path.join(root, filename))
+				# This should never occur
+				except FileNotFoundError:
+					print('get_allfiles found file that does not exist:', os.path.join(root, filename))
+				# Non-music files may include cover art, etc. This is not a problem and is expected to occur
+				except NotImplementedError:
+					print('get_allfiles found non-music file:', os.path.join(root, filename))
+					continue
+
+		return matches
