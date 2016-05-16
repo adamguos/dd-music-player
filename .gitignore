@@ -1,3 +1,6 @@
 mongo/
 __pycache__/
 Music/
+*.key
+secrets.py
+tmp/
