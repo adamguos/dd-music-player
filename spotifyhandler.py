@@ -5,6 +5,11 @@ class SpotifyHandler:
 	'Class for interfacing with pyspotify (and libspotify)'
 
 	def __init__(self):
+		self.playlist = None
+		self.track = None	# Track selected either by the user or the playlist to be played next
+		self.curplaytrack = None	# Currently playing track
+		self.selindex = None	# Index of self.track within self.playlist
+
 		print('Start logging in')
 
 		logged_in_event = threading.Event()
@@ -28,12 +33,8 @@ class SpotifyHandler:
 
 		print('Logged in as', username)
 
-		def endtrack(session, errortype):
-			if errortype is spotify.ErrorType.OK:
-
-
-		# Set up listeners for when the currently playing track finishes
-		self.session.on(spotify.SessionEvent.END_OF_TRACK, endtrack)
+		# Set up listener for when the currently playing track finishes
+		self.session.on(spotify.SessionEvent.END_OF_TRACK, self.next)
 
 	''' Set up Config object for initialising the pyspotify session '''
 	def configsession(self):
@@ -77,6 +78,7 @@ class SpotifyHandler:
 	''' Select a certain track (by index according to the list returned by gettracknames()) in the currently selected playlist by assigning to an instance variable '''
 	def selecttrack(self, index):
 		self.track = self.playlist.tracks[index]
+		self.selindex = index
 		self.track.load()
 
 	''' Play the currently selected track through ALSAAudio '''
@@ -87,10 +89,10 @@ class SpotifyHandler:
 			if self.track == self.curplaytrack:
 				player.play()
 				return
-		else:
-			player.load(self.track)
-			player.play()
-			self.curplaytrack = self.track
+
+		player.load(self.track)
+		player.play()
+		self.curplaytrack = self.track
 
 	''' Pause the currently playing track '''
 	def pause(self):
@@ -105,5 +107,25 @@ class SpotifyHandler:
 
 		if player.state == 'playing' or player.state == 'paused':
 			player.unload()
+
+	''' Starts playing the next track in the current playlist '''
+	def next(self, *session):
+		try:
+			self.track = self.playlist.tracks[self.selindex + 1]
+			self.play()
+			self.selindex += 1
+		except IndexError:
+			self.stop()
+			self.selindex = None
+
+	''' Starts playing the previous track in the current playlist '''
+	def prev(self):
+		try:
+			self.track = self.playlist.tracks[self.selindex - 1]
+			self.play()
+			self.selindex -= 1
+		except IndexError:
+			self.stop()
+			self.selindex = None
 
 sh = SpotifyHandler()
