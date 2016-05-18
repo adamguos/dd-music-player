@@ -70,6 +70,21 @@ class DbHandler:
 			names.append(document['filename'])
 		return names
 
+	''' Return tracknames and filenames of tracks that match the provided filter '''
+	def querytracks(self, filt):
+		cursor = self.coll.find(filt)
+
+		tracknames = []
+		for document in cursor:
+			tracknames.append([document['title'], document['filename']])
+
+		return tracknames
+
+	''' Return album names that match the provided filter '''
+	def queryalbums(self, filt):
+		albumnames = self.coll.distinct('album', filt)
+		return albumnames
+
 	''' Return the number of records in the database '''
 	def numofrecs(self):
 		cursor = self.coll.find()
