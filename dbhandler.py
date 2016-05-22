@@ -76,7 +76,7 @@ class DbHandler:
 
 		tracknames = []
 		for document in cursor:
-			tracknames.append([document['title'], document['filename']])
+			tracknames.append((document['title'], document['filename']))
 
 		return tracknames
 

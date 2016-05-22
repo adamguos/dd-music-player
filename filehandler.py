@@ -32,7 +32,7 @@ class FileHandler:
 		elif codec == 'm4a':
 			tagsdict = dict(cls.parse_m4a(filename), **{'filename': filename, 'update': cls.getupdate(filename)})
 
-		# Guaranteed attributes of tagsdict: date, title, tracknumber (no total), genre, album, albumartist, artist, discnumber (no total), filename (excluding media directory, including extension)
+		# Guaranteed attributes of tagsdict: date, title, tracknumber (no total), genre, album, albumartist, artist, composer, discnumber (no total), filename (excluding media directory, including extension)
 		return tagsdict
 
 	''' Determine what file format (and therefore codec, in this simplified case) the file is in '''
@@ -65,6 +65,10 @@ class FileHandler:
 		d['tracknumber'] = d['tracknumber'].split('/')[0]
 		d['discnumber'] = d['discnumber'].split('/')[0]
 
+		# If a composer tag doesn't exist, create one with a blank string
+		if not 'composer' in d:
+			d['composer'] = ''
+
 		return d
 
 	''' Open a FLAC file and create a dict storing its metadata in a standard form used across the module '''
@@ -77,6 +81,10 @@ class FileHandler:
 		# All values in the dict are further stored inside lists; this removes that unnecessary layer
 		for key in d:
 			d[key] = d[key][0]
+
+		# If a composer tag doesn't exist, create one with a blank string
+		if not 'composer' in d:
+			d['composer'] = ''
 
 		return d
 
