@@ -7,6 +7,7 @@ class Browser:
 		self.dbh = DbHandler()
 		self.dbh.initmetadata()
 		self.rootnode = self.initbrowsernodes()
+		self.curnode = self.rootnode
 
 	def initbrowsernodes(self):
 		main = BrowserNode('main', self.dbh)
@@ -15,10 +16,10 @@ class Browser:
 		spotify = BrowserNode('Spotify', self.dbh)
 		restart = BrowserNode('Restart', self.dbh)
 
-		albumartists = BrowserNode('Album artists', self.dbh, 'albums', 'albumartist')
-		artists = BrowserNode('Artists', self.dbh, 'albums', 'artist')
-		composers = BrowserNode('Composers', self.dbh, 'albums', 'composer')
-		genres = BrowserNode('Genres', self.dbh, 'albums', 'genre')
+		albumartists = BrowserNode('Album artists', self.dbh, 'tags', 'albumartist')
+		artists = BrowserNode('Artists', self.dbh, 'tags', 'artist')
+		composers = BrowserNode('Composers', self.dbh, 'tags', 'composer')
+		genres = BrowserNode('Genres', self.dbh, 'tags', 'genre')
 
 		localmedia.addchild(albumartists)
 		localmedia.addchild(artists)
@@ -28,6 +29,22 @@ class Browser:
 		main.addchild(localmedia)
 		main.addchild(spotify)
 		main.addchild(restart)
+
+		return main
+
+	def curlist(self):
+		children = []
+		for child in self.curnode.getchildren():
+			children.append(str(child))
+		return children
+
+	def select(self, index):
+		self.curnode = self.curnode.getchild(index)
+		return self.curlist()
+
+	def back(self):
+		self.curnode = self.curnode.getparent()
+		return self.curlist()
 
 class BrowserNode:
 	'Class representing each selectable item in the browser'
@@ -49,13 +66,22 @@ class BrowserNode:
 
 	def getchildren(self):
 		if self.querytarget == 'tags':
+			self.children = []
 			for item in self.dbh.querytags(self.querysearch):
 				self.addchild(BrowserNode(item, self.dbh, 'albums', {self.querysearch: item}))
 		elif self.querytarget == 'albums':
+			self.children = []
 			for item in self.dbh.queryalbums(self.querysearch):
 				self.addchild(BrowserNode(item, self.dbh, 'tracks', dict(self.querysearch, **{'album': item})))
+		elif self.querytarget == 'tracks':
+			self.children = []
+			for item in self.dbh.querytracks(self.querysearch):
+				self.addchild(BrowserNode(item[0], self.dbh))
 
 		return self.children
+
+	def getchild(self, index):
+		return self.children[index]
 
 	def addchild(self, child):
 		if not child in self.children:
@@ -70,3 +96,5 @@ class BrowserNode:
 
 	def setparent(self, parent):
 		self.parent = parent
+
+b = Browser()
