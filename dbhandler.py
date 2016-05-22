@@ -85,6 +85,11 @@ class DbHandler:
 		albumnames = self.coll.distinct('album', filt)
 		return albumnames
 
+	''' Return distinct values of the tag passed in '''
+	def querytags(self, tag):
+		values = self.coll.distinct(tag)
+		return values
+
 	''' Return the number of records in the database '''
 	def numofrecs(self):
 		cursor = self.coll.find()
