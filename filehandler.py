@@ -4,7 +4,7 @@ from mutagen.flac import FLAC
 import os
 
 class FileHandler:
-	'Class for interfacing with media files and metadata tags; used from DbHandler for disk IO'
+	'Class for interfacing with media files and metadata tags; used from DbHandler for disk IO and for file playback'
 
 	mediadir = 'Music/'
 

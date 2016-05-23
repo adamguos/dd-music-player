@@ -51,7 +51,7 @@ class BrowserNode:
 
 	# label: the text that will be displayed
 	# dbh: reference to DbHandler instance
-	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', and 'tracks'
+	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', 'tracks', and 'play'
 	# querysearch: the search term or dict to be used to search for elements to populate children
 	def __init__(self, label, dbh, querytarget = '', querysearch = ''):
 		self.label = label
