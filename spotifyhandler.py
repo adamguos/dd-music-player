@@ -101,6 +101,15 @@ class SpotifyHandler:
 		if player.state == 'playing':
 			player.pause()
 
+	''' Pause if the track is playing, play if the track is paused '''
+	def togglepause(self):
+		player = self.session.player
+
+		if player.state == 'playing':
+			self.pause()
+		elif player.state == 'paused':
+			self.play()
+
 	''' Stop the currently playing track '''
 	def stop(self):
 		player = self.session.player

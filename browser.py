@@ -1,4 +1,5 @@
 from dbhandler import DbHandler
+from player import Player
 
 class Browser:
 	'Class for traversing the browser structure and controlling local media playback'
@@ -6,6 +7,7 @@ class Browser:
 	def __init__(self):
 		self.dbh = DbHandler()
 		self.dbh.initmetadata()
+		self.player = Player()
 		self.rootnode = self.initbrowsernodes()
 		self.curnode = self.rootnode
 
@@ -39,7 +41,12 @@ class Browser:
 		return children
 
 	def select(self, index):
-		self.curnode = self.curnode.getchild(index)
+		selection = self.curnode.getchild(index)
+		if selection.querytarget == 'play local':
+			self.player.set_media(selection.querysearch)
+			self.player.play()
+		else:
+			self.curnode = self.curnode.getchild(index)
 		return self.curlist()
 
 	def back(self):
@@ -51,7 +58,7 @@ class BrowserNode:
 
 	# label: the text that will be displayed
 	# dbh: reference to DbHandler instance
-	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', 'tracks', and 'play'
+	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', 'tracks', 'play local'
 	# querysearch: the search term or dict to be used to search for elements to populate children
 	def __init__(self, label, dbh, querytarget = '', querysearch = ''):
 		self.label = label
@@ -76,7 +83,7 @@ class BrowserNode:
 		elif self.querytarget == 'tracks':
 			self.children = []
 			for item in self.dbh.querytracks(self.querysearch):
-				self.addchild(BrowserNode(item[0], self.dbh))
+				self.addchild(BrowserNode(item[0], self.dbh, 'play local', item[1]))
 
 		return self.children
 
