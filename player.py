@@ -6,6 +6,7 @@ class Player:
 
 	def __init__(self):
 		self.media_dir = FileHandler.mediadir
+		self.playlist = []
 		self.vlc_instance = vlc.Instance()
 		self.vlc_player = self.vlc_instance.media_player_new()
 
@@ -18,5 +19,3 @@ class Player:
 
 	def toggle_pause(self):
 		self.vlc_player.pause()
-
-p = Player()

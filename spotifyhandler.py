@@ -136,5 +136,3 @@ class SpotifyHandler:
 		except IndexError:
 			self.stop()
 			self.selindex = None
-
-sh = SpotifyHandler()

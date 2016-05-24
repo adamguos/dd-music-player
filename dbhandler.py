@@ -113,5 +113,3 @@ class DbHandler:
 	''' Create a new record with metadata retrieved from storage '''
 	def createrec(self, filename):
 		self.coll.insert_one(FileHandler.getmetadata(filename))
-
-dbh = DbHandler()

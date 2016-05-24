@@ -1,5 +1,6 @@
 from dbhandler import DbHandler
 from player import Player
+from spotifyhandler import SpotifyHandler
 
 class Browser:
 	'Class for traversing the browser structure and controlling local media playback'
@@ -8,20 +9,21 @@ class Browser:
 		self.dbh = DbHandler()
 		self.dbh.initmetadata()
 		self.player = Player()
+		self.sh = SpotifyHandler()
 		self.rootnode = self.initbrowsernodes()
 		self.curnode = self.rootnode
 
 	def initbrowsernodes(self):
-		main = BrowserNode('main', self.dbh)
+		main = BrowserNode('main', self.dbh, self.sh)
 
-		localmedia = BrowserNode('Local media', self.dbh)
-		spotify = BrowserNode('Spotify', self.dbh)
-		restart = BrowserNode('Restart', self.dbh)
+		localmedia = BrowserNode('Local media', self.dbh, self.sh)
+		spotify = BrowserNode('Spotify', self.dbh, self.sh, 'spotify playlists')
+		restart = BrowserNode('Restart', self.dbh, self.sh)
 
-		albumartists = BrowserNode('Album artists', self.dbh, 'tags', 'albumartist')
-		artists = BrowserNode('Artists', self.dbh, 'tags', 'artist')
-		composers = BrowserNode('Composers', self.dbh, 'tags', 'composer')
-		genres = BrowserNode('Genres', self.dbh, 'tags', 'genre')
+		albumartists = BrowserNode('Album artists', self.dbh, self.sh, 'tags', 'albumartist')
+		artists = BrowserNode('Artists', self.dbh, self.sh, 'tags', 'artist')
+		composers = BrowserNode('Composers', self.dbh, self.sh, 'tags', 'composer')
+		genres = BrowserNode('Genres', self.dbh, self.sh, 'tags', 'genre')
 
 		localmedia.addchild(albumartists)
 		localmedia.addchild(artists)
@@ -45,6 +47,9 @@ class Browser:
 		if selection.querytarget == 'play local':
 			self.player.set_media(selection.querysearch)
 			self.player.play()
+		elif selection.querytarget == 'play spotify':
+			self.sh.selecttrack(selection.querysearch)
+			self.sh.play()
 		else:
 			self.curnode = self.curnode.getchild(index)
 		return self.curlist()
@@ -58,11 +63,12 @@ class BrowserNode:
 
 	# label: the text that will be displayed
 	# dbh: reference to DbHandler instance
-	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', 'tracks', 'play local'
+	# querytarget: if passed, determines what data will be retrieved from the database to populate children; possible values are 'tags', 'albums', 'tracks', 'play local', 'spotify playlists'
 	# querysearch: the search term or dict to be used to search for elements to populate children
-	def __init__(self, label, dbh, querytarget = '', querysearch = ''):
+	def __init__(self, label, dbh, sh, querytarget = '', querysearch = ''):
 		self.label = label
 		self.dbh = dbh
+		self.sh = sh
 		self.querytarget = querytarget
 		self.querysearch = querysearch
 		self.children = []
@@ -75,15 +81,26 @@ class BrowserNode:
 		if self.querytarget == 'tags':
 			self.children = []
 			for item in self.dbh.querytags(self.querysearch):
-				self.addchild(BrowserNode(item, self.dbh, 'albums', {self.querysearch: item}))
+				self.addchild(BrowserNode(item, self.dbh, self.sh, 'albums', {self.querysearch: item}))
 		elif self.querytarget == 'albums':
 			self.children = []
 			for item in self.dbh.queryalbums(self.querysearch):
-				self.addchild(BrowserNode(item, self.dbh, 'tracks', dict(self.querysearch, **{'album': item})))
+				self.addchild(BrowserNode(item, self.dbh, self.sh, 'tracks', dict(self.querysearch, **{'album': item})))
 		elif self.querytarget == 'tracks':
 			self.children = []
 			for item in self.dbh.querytracks(self.querysearch):
-				self.addchild(BrowserNode(item[0], self.dbh, 'play local', item[1]))
+				self.addchild(BrowserNode(item[0], self.dbh, self.sh, 'play local', item[1]))
+		elif self.querytarget == 'spotify playlists':
+			self.children = []
+			playlists = self.sh.getplaylistnames()
+			for index in range(len(playlists)):
+				self.addchild(BrowserNode(playlists[index], self.dbh, self.sh, 'spotify tracks', index))
+		elif self.querytarget == 'spotify tracks':
+			self.children = []
+			self.sh.selectplaylist(self.querysearch)
+			tracks = self.sh.gettracknames()
+			for index in range(len(tracks)):
+				self.addchild(BrowserNode(tracks[index], self.dbh, self.sh, 'play spotify', index))
 
 		return self.children
 
