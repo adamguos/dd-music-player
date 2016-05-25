@@ -45,11 +45,13 @@ class Browser:
 	def select(self, index):
 		selection = self.curnode.getchild(index)
 		if selection.querytarget == 'play local':
+			self.sh.stop()
 			filenames = []
 			for child in self.curnode.getchildren():
 				filenames.append(child.querysearch)
 			self.player.play(filenames, index)
 		elif selection.querytarget == 'play spotify':
+			self.player.stop()
 			self.sh.selecttrack(selection.querysearch)
 			self.sh.play()
 		else:
@@ -57,7 +59,9 @@ class Browser:
 		return self.curlist()
 
 	def back(self):
-		self.curnode = self.curnode.getparent()
+		parent = self.curnode.getparent()
+		if parent:
+			self.curnode = parent
 		return self.curlist()
 
 class BrowserNode:
