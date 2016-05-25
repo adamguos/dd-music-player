@@ -45,8 +45,10 @@ class Browser:
 	def select(self, index):
 		selection = self.curnode.getchild(index)
 		if selection.querytarget == 'play local':
-			self.player.set_media(selection.querysearch)
-			self.player.play()
+			filenames = []
+			for child in self.curnode.getchildren():
+				filenames.append(child.querysearch)
+			self.player.play(filenames, index)
 		elif selection.querytarget == 'play spotify':
 			self.sh.selecttrack(selection.querysearch)
 			self.sh.play()
