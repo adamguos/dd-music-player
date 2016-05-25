@@ -1,5 +1,6 @@
 from filehandler import FileHandler
 from pymongo import MongoClient
+import pymongo
 
 class DbHandler:
 	'Class for interfacing with MongoDB'
@@ -72,7 +73,10 @@ class DbHandler:
 
 	''' Return tracknames and filenames of tracks that match the provided filter '''
 	def querytracks(self, filt):
-		cursor = self.coll.find(filt)
+		cursor = self.coll.find(filt).sort([
+			('discnumber', pymongo.ASCENDING),
+			('tracknumber', pymongo.ASCENDING)
+		])
 
 		tracknames = []
 		for document in cursor:
@@ -83,11 +87,13 @@ class DbHandler:
 	''' Return album names that match the provided filter '''
 	def queryalbums(self, filt):
 		albumnames = self.coll.distinct('album', filt)
+		albumnames = sorted(albumnames, key = str.lower)
 		return albumnames
 
 	''' Return distinct values of the tag passed in '''
 	def querytags(self, tag):
 		values = self.coll.distinct(tag)
+		values = sorted(values, key = str.lower)
 		return values
 
 	''' Return the number of records in the database '''
