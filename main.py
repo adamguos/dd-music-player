@@ -1,8 +1,3 @@
-from dbhandler import DbHandler
-from filehandler import FileHandler
+import gui
 
-class Main:
-	'Main class for executing program functions'
-
-	def __init__(self):
-		pass
+gui.main()

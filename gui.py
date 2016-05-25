@@ -34,17 +34,16 @@ class GUI(Frame):
 			newlist = b.back()
 		else:
 			newlist = b.select(val.widget.curselection()[0] - 1)
-		
-		self.lb.delete(0, END)
-		self.lb.insert(END, 'Back')
-		for item in newlist:
-			self.lb.insert(END, item)
+
+		if not self.lb.get(1, END) == tuple(newlist):
+			print('refreshing')
+			self.lb.delete(0, END)
+			self.lb.insert(END, 'Back')
+			for item in newlist:
+				self.lb.insert(END, item)
 
 def main():
 	root = Tk()
 	app = GUI(root)
 	root.geometry('300x250+300+300')
 	root.mainloop()
-
-if __name__ == '__main__':
-	main()
