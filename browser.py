@@ -1,6 +1,8 @@
 from dbhandler import DbHandler
 from player import Player
 from spotifyhandler import SpotifyHandler
+import sys
+import os
 import vlc
 
 class Browser:
@@ -16,11 +18,11 @@ class Browser:
 		self.mostrecentplayer = ''
 
 	def initbrowsernodes(self):
-		main = BrowserNode('main', self.dbh, self.sh)
+		root = BrowserNode('root', self.dbh, self.sh)
 
 		localmedia = BrowserNode('Local media', self.dbh, self.sh)
 		spotify = BrowserNode('Spotify', self.dbh, self.sh, 'spotify playlists')
-		restart = BrowserNode('Restart', self.dbh, self.sh)
+		restart = BrowserNode('Restart', self.dbh, self.sh, 'restart')
 
 		albumartists = BrowserNode('Album artists', self.dbh, self.sh, 'tags', 'albumartist')
 		artists = BrowserNode('Artists', self.dbh, self.sh, 'tags', 'artist')
@@ -32,11 +34,11 @@ class Browser:
 		localmedia.addchild(composers)
 		localmedia.addchild(genres)
 
-		main.addchild(localmedia)
-		main.addchild(spotify)
-		main.addchild(restart)
+		root.addchild(localmedia)
+		root.addchild(spotify)
+		root.addchild(restart)
 
-		return main
+		return root
 
 	def curlist(self):
 		children = []
@@ -58,6 +60,8 @@ class Browser:
 			self.player.stop()
 			self.sh.selecttrack(selection.querysearch)
 			self.sh.play()
+		elif selection.querytarget == 'restart':
+			self.restart_program()
 		else:
 			self.curnode = self.curnode.getchild(index)
 		return self.curlist()
@@ -85,6 +89,10 @@ class Browser:
 			self.player.prev()
 		elif self.mostrecentplayer == 'spotify':
 			self.sh.prev()
+
+	def restart_program(self):
+		python = sys.executable
+		os.execl(python, python, *sys.argv)
 
 class BrowserNode:
 	'Class representing each selectable item in the browser'
