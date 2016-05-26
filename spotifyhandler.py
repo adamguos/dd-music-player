@@ -136,3 +136,6 @@ class SpotifyHandler:
 		except IndexError:
 			self.stop()
 			self.selindex = None
+
+	def getstate(self):
+		return str(self.session.player.state)

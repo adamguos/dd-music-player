@@ -25,7 +25,14 @@ class GUI(Frame):
 		for item in b.curlist():
 			self.lb.insert(END, item)
 
-		self.lb.bind('<<ListboxSelect>>', self.on_select)
+		self.lb.bind('<Return>', self.on_select)
+
+		self.lb.bind('<p>', self.on_pause)
+		self.lb.bind('<o>', self.on_next)
+		self.lb.bind('<i>', self.on_prev)
+
+		self.lb.focus_set()
+		self.lb.selection_set(0)
 
 	def on_select(self, val):
 		newlist = []
@@ -41,6 +48,18 @@ class GUI(Frame):
 			self.lb.insert(END, 'Back')
 			for item in newlist:
 				self.lb.insert(END, item)
+
+		self.lb.selection_clear(0, END)
+		self.lb.selection_set(0)
+
+	def on_pause(self, val):
+		b.togglepause()
+
+	def on_next(self, val):
+		b.next()
+
+	def on_prev(self, val):
+		b.prev()
 
 def main():
 	root = Tk()

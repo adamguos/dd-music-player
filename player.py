@@ -26,7 +26,17 @@ class Player:
 		print(13)
 
 	def play(self, *args):
+		cur_playing = ''
+		try:
+			cur_playing = self.playlist[self.cur_track]
+		except IndexError:
+			cur_playing = ''
+
+		to_be_played = cur_playing
 		if len(args) == 2:
+			to_be_played = args[0][args[1]]
+
+		if not cur_playing == to_be_played:
 			self.set_playlist(args[0], args[1])
 		self.vlc_player.play()
 
@@ -42,13 +52,9 @@ class Player:
 	def next(self):
 		print('next')
 		try:
-			print(1)
 			self.cur_track += 1
-			print(2)
 			self.set_media()
-			print(3)
 			self.play()
-			print(4)
 		except IndexError:
 			print('Index error')
 			self.cur_track -= 1
@@ -57,14 +63,13 @@ class Player:
 	def prev(self):
 		print('prev')
 		try:
-			print(1)
 			self.cur_track -= 1
-			print(2)
 			self.set_media()
-			print(3)
 			self.play()
-			print(4)
 		except IndexError:
 			print('Index error')
 			self.cur_track += 1
 			pass
+
+	def get_state(self):
+		return self.vlc_player.get_state()

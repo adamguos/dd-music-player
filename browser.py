@@ -1,6 +1,7 @@
 from dbhandler import DbHandler
 from player import Player
 from spotifyhandler import SpotifyHandler
+import vlc
 
 class Browser:
 	'Class for traversing the browser structure and controlling local media playback'
@@ -12,6 +13,7 @@ class Browser:
 		self.sh = SpotifyHandler()
 		self.rootnode = self.initbrowsernodes()
 		self.curnode = self.rootnode
+		self.mostrecentplayer = ''
 
 	def initbrowsernodes(self):
 		main = BrowserNode('main', self.dbh, self.sh)
@@ -45,12 +47,14 @@ class Browser:
 	def select(self, index):
 		selection = self.curnode.getchild(index)
 		if selection.querytarget == 'play local':
+			self.mostrecentplayer = 'local'
 			self.sh.stop()
 			filenames = []
 			for child in self.curnode.getchildren():
 				filenames.append(child.querysearch)
 			self.player.play(filenames, index)
 		elif selection.querytarget == 'play spotify':
+			self.mostrecentplayer = 'spotify'
 			self.player.stop()
 			self.sh.selecttrack(selection.querysearch)
 			self.sh.play()
@@ -63,6 +67,24 @@ class Browser:
 		if parent:
 			self.curnode = parent
 		return self.curlist()
+
+	def togglepause(self):
+		if self.mostrecentplayer == 'local':
+			self.player.pause()
+		elif self.mostrecentplayer == 'spotify':
+			self.sh.togglepause()
+
+	def next(self):
+		if self.mostrecentplayer == 'local':
+			self.player.next()
+		elif self.mostrecentplayer == 'spotify':
+			self.sh.next()
+
+	def prev(self):
+		if self.mostrecentplayer == 'local':
+			self.player.prev()
+		elif self.mostrecentplayer == 'spotify':
+			self.sh.prev()
 
 class BrowserNode:
 	'Class representing each selectable item in the browser'
