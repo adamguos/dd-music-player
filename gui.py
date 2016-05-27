@@ -11,12 +11,10 @@ class GUI(Frame):
 		self.init_ui()
 
 	def init_ui(self):
-		global browser
-
 		self.parent.title('Python Music Player')
 		self.pack(fill = BOTH, expand = 1)
 
-		small_font = font.Font(size = 14)
+		small_font = font.Font(size = 12)
 
 		self.lb = Listbox(self, font=small_font)
 		self.lb.pack(fill = BOTH, expand = 1)
