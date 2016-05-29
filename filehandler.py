@@ -6,7 +6,7 @@ import os
 class FileHandler:
 	'Class for interfacing with media files and metadata tags; used from DbHandler for disk IO'
 
-	mediadir = 'Music/'
+	mediadir = '/mnt/Music/'
 
 	''' Check if the specified filename exists '''
 	@classmethod
@@ -58,12 +58,18 @@ class FileHandler:
 			d[key] = d[key][0]
 
 		# Renames 'performer' to 'albumartist'
-		d['albumartist'] = d['performer']
-		del d['performer']
+		try:
+			d['albumartist'] = d['performer']
+			del d['performer']
+		except KeyError:
+			pass
 
 		# Removes total from disc and track number values
-		d['tracknumber'] = d['tracknumber'].split('/')[0]
-		d['discnumber'] = d['discnumber'].split('/')[0]
+		try:
+			d['tracknumber'] = d['tracknumber'].split('/')[0]
+			d['discnumber'] = d['discnumber'].split('/')[0]
+		except KeyError:
+			pass
 
 		# If a composer tag doesn't exist, create one with a blank string
 		if not 'composer' in d:
@@ -100,8 +106,11 @@ class FileHandler:
 			d[key] = d[key][0]
 
 		# Removes total from disc and track number values
-		d['tracknumber'] = d['tracknumber'].split('/')[0]
-		d['discnumber'] = d['discnumber'].split('/')[0]
+		try:
+			d['tracknumber'] = d['tracknumber'].split('/')[0]
+			d['discnumber'] = d['discnumber'].split('/')[0]
+		except KeyError:
+			pass
 
 		return d
 
@@ -127,7 +136,7 @@ class FileHandler:
 					print('get_allfiles found file that does not exist:', os.path.join(root, filename))
 				# Non-music files may include cover art, etc. This is not a problem and is expected to occur
 				except NotImplementedError:
-					print('get_allfiles found non-music file:', os.path.join(root, filename))
+					#print('get_allfiles found non-music file:', os.path.join(root, filename))
 					continue
 
 		return matches

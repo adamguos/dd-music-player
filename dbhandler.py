@@ -2,6 +2,8 @@ from filehandler import FileHandler
 from pymongo import MongoClient
 import pymongo
 
+from timeit import default_timer as timer
+
 class DbHandler:
 	'Class for interfacing with MongoDB'
 
@@ -12,6 +14,8 @@ class DbHandler:
 
 	''' Go through the database records upon boot and ensure that they match the contents of the music files in storage '''
 	def initmetadata(self):
+		start = timer()
+
 		tracks = FileHandler.getallfiles()
 
 		numCreated = 0
@@ -24,12 +28,12 @@ class DbHandler:
 			# If the record retrieved doesn't exist, then create it
 			if not record:
 				self.createrec(filename)
-				print('Created:', filename)
+				#print('Created:', filename)
 				numCreated += 1
 			# If the file has been updated since the record was created, then update the record
 			elif not FileHandler.getupdate(filename) == record['update']:
 				self.reprec(filename)
-				print('Updated:', filename)
+				#print('Updated:', filename)
 				numUpdated += 1
 
 		records = self.coll.find()
@@ -39,12 +43,15 @@ class DbHandler:
 			if not FileHandler.checkexists(record['filename']):
 				# If the filename on an existing record doesn't exist, delete the record
 				self.delrec(record['filename'])
-				print('Deleted:', record['filename'])
+				#print('Deleted:', record['filename'])
 				numRemoved += 1
 
 		print('Number of records created:', numCreated)
 		print('Number of records updated:', numUpdated)
 		print('Number of records removed:', numRemoved)
+
+		end = timer()
+		print(end - start, 'seconds elapsed')
 
 	''' Return the record specified by the filename '''
 	def getrec(self, filename):

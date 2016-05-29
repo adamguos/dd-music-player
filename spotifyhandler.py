@@ -14,15 +14,19 @@ class SpotifyHandler:
 
 		logged_in_event = threading.Event()
 
-		def connection_state_listener(session):
-			if session.connection.state is spotify.ConnectionState.LOGGED_IN:
+		def connection_state_listener(session, error_type):
+			if error_type is spotify.ErrorType.OK:
 				logged_in_event.set()
+			else:
+				print('Spotify authentication failed, please check login credentials')
+				print('Program terminating')
+				quit()
 
 		self.session = spotify.Session(self.configsession())
 		self.audio = spotify.AlsaSink(self.session)
 		loop = spotify.EventLoop(self.session)
 		loop.start()
-		self.session.on(spotify.SessionEvent.CONNECTION_STATE_UPDATED, connection_state_listener)
+		self.session.on(spotify.SessionEvent.LOGGED_IN, connection_state_listener)
 
 		from secrets import username
 		from secrets import password
